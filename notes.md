@@ -499,7 +499,6 @@ It uses the reliable data transfer service of TCP to trainsfer mail. It restrict
 SMTP uses persistent connections: if the server sends several messages to the same receiving mail server, it can send all of the messages over the same TCP connection.
 
 ### 2.4.2 Comparison with HTTP
-
 Both protocols transfer files; HTTP from Web server to a Web client and SMTP from one mail server to another mail server. Both of the protocols use perisistent connections when transferring files. However there are 3 differences:
 
 1. HTTP is mainly a pull protocol; the TCP connection is initiated by the machine that wants to receive the file. SMTP is a push protocol; the TCP connection is initiated by the machine that wants to send the file
@@ -507,8 +506,19 @@ Both protocols transfer files; HTTP from Web server to a Web client and SMTP fro
 3. When handling a document consisting of text and images HTTP encapsulates each object in each own HTTP response message, while internet mail places all of the messages' objects into one message.
 
 ### 2.4.4 Mail Access Protocols
+Mail access uses a client-server architecture, so the user reads emails with a client that executes on the user's end sustem. An email server manages mailboxes and runs the client and server sides of SMTP, so a user runs a user agent on the local PC but accesses its mailbox stores on an always-on shared mail server. An email is first sent to the sender's mail server and stored there in case that the recipient's server is not available. SMTP is a push protocol so it is used to transfer mail from the sender's mail server to the sender's user agent. A mail access protocol, such as POP3, is used to transfer mail from the recipient's server to the recipient's mail server to the recipient's user agent.
 
+#### POP3 
+A simple mail access protocol with 3 phases:
 
+1. First phase is called authorization and the user agent sends a username and a password in order to authenticate the user.
+2. During the second phase, transaction, the user agent retrieves the message and can mark messages for deletion.
+3. The third phase, update, occurs after the the client has issued the quit command, ending the POP3 session. At the same time the mail server deletes the messages that were marked for deletion.
+
+During a POP3 session the POP3 server maintains some state information but it does not carry state information across POP3 sessions.
+
+#### IMAP
+POP3 protocol does not provide any means for a user to create remote folders and assign messages to folders. IMAP is a mail protocol that has more features and it is more complicated than POP3. IMAP will associate every message with a folder, hence when a message first arrives at the server it is associated with the receiver's INBOX folder. The IMAP protocol provides commands to allow users to create folders and move messages from one folder to another. It also allows users to search folders for messages. Unlike POP3, it maintains user state information across IMAP sessions. Also it has commands that perimit users to obtain components of messages, a useful feature for low-bandwidth connection.
 
 ## 2.5 DNS - The Internet's Directory Service
 One identifier for a host is its **hostname** [`cnn.com`, `www.yahoo.com`]. Hostnames are mnemonic and therefore used by humans. Hosts are also identified by **IP addresses**.
