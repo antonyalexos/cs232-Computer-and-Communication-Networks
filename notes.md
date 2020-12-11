@@ -487,6 +487,27 @@ A conditional get message is sent from the cache to server which responds only i
 It has three components, the user agents, the mail servers and the SMTP. Mail servers form the core of the e-mail infrastructure. An email starts in the sender's user agent, travels to sender's mail server, travels to recipient's mail server and ends up in the recipient's mailbox. If email cannot be delivered it stays in a message queue and the server attemts to transfer the message later. 
 
 ### 2.4.1 SMTP
+It uses the reliable data transfer service of TCP to trainsfer mail. It restricts the body of all mail messages to simple 7-ASCII. It doesn't use intermediate mail servers for sending mails, even if one of the 2 servers that are communicating is down and it connects the 2 servers directly with each other.
+
+**How SMTP transfers a mail:**
+
+- The client SMTP has TCP establish a connection a connection at server SMTP. If the server is down it tries again later.
+- Once this connection is established the server and client perform some application layer handshaking in order to introduce themselves. During this phase SMTP introduces the email address of the recipient and the sender.
+- Then the client sends the message and the exchange of messages occurs.
+- When finished the TCP is instructed to close the connection.
+
+SMTP uses persistent connections: if the server sends several messages to the same receiving mail server, it can send all of the messages over the same TCP connection.
+
+### 2.4.2 Comparison with HTTP
+
+Both protocols transfer files; HTTP from Web server to a Web client and SMTP from one mail server to another mail server. Both of the protocols use perisistent connections when transferring files. However there are 3 differences:
+
+1. HTTP is mainly a pull protocol; the TCP connection is initiated by the machine that wants to receive the file. SMTP is a push protocol; the TCP connection is initiated by the machine that wants to send the file
+2. SMTP requires each message to be in 7-bit ASCII. HTTP does not impose this restriction. 
+3. When handling a document consisting of text and images HTTP encapsulates each object in each own HTTP response message, while internet mail places all of the messages' objects into one message.
+
+### 2.4.4 Mail Access Protocols
+
 
 
 ## 2.5 DNS - The Internet's Directory Service
