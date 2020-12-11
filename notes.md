@@ -483,6 +483,12 @@ An HTTP request message is a conditional get if
 
 A conditional get message is sent from the cache to server which responds only if the object has been modified.
 
+## 2.4 Electronic Mail in the Internet
+It has three components, the user agents, the mail servers and the SMTP. Mail servers form the core of the e-mail infrastructure. An email starts in the sender's user agent, travels to sender's mail server, travels to recipient's mail server and ends up in the recipient's mailbox. If email cannot be delivered it stays in a message queue and the server attemts to transfer the message later. 
+
+### 2.4.1 SMTP
+
+
 ## 2.5 DNS - The Internet's Directory Service
 One identifier for a host is its **hostname** [`cnn.com`, `www.yahoo.com`]. Hostnames are mnemonic and therefore used by humans. Hosts are also identified by **IP addresses**.
 
