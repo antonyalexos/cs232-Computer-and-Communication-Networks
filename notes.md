@@ -1061,7 +1061,15 @@ The least cost between x and y d(x,y) can be determined using the ***Bellman-For
 
 d(x,y) = min_v {c(x,y) + d(v,y)}
 
-... to be continued
+#### A comparison of LS and DV Routing Algorithms
+In the DV algorithm, each node talks to only its directly connected neighbors and it provides its neighbors with least-cost estimates from itself to all other nodes in the network. In the LS algorithm, each node talks with all other nodes but it tells them onlt the costs of tis directly connected links. There are three major differences.
+
+- **Message Complixity**. LS requires each node to know the cost of each link in the network, and whenever a link cost changes the new link cost must be sent to all nodes. The DV algorithm requires messages exchanges between directly connected neighbors at each iteration. When link costs change the DV algirhtm will propagate the results of the changed link cost only if the new link cost results in a changed least-cost path for one of the nodes attached to that link. 
+
+- **Spread of Convergence**. The implementation of LS is an O(|N|^2) algorithm requiring O(|N||E|) messages. The DV algorithm can converge slowly and can have routing loops while the algorithm is converging. DV also suffers from count-to-infinity problem.
+
+- **Robustness**. In LS, a router could broadcast a an incorrect cost for one of its attached links. A node could also corrupt or drop any packets it received as part of an LS broadcast. But an LS node is computing only its own forwarding tables. This means that route calculations are separated under LS providign a degree of robustness. Under DV, a node can advertise incorrect least-cost paths to any or all destinations. So at each iteration a node's calculation in DV is passed on to its neighbor and then to its neighbor's neighbor. so an incorrect node calculation can be diffused through the whole network.
+
 
 ### 4.5.3 Hierarchical Routing
 In practice it is not possible to have a network of interconnected routers running the same routing algorithm because of two reasons:
