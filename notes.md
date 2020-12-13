@@ -976,11 +976,14 @@ The client decides to end the connection:
 
 ## 3.6 Principles of Congestion Control
 
-### 3.6.1 The Causes and the Costs of Congestion
+### 3.6.2 Approaches to Congestion Control
+We can distinguish among them by whether the network layer provides the any explicit assistance to the trainsport layer for congestion-control purposes:
 
-#### Scenario 1: Two Senders, A Router with Infinite Buffers
-A -> D, B -> C, A and B connect to the Internet through the same router, B and C connect to the Internet through the same router
-(pas envie)
+- **End-to-end congestion control**. The network layer provides no explicit support to the transport layer for congestion control purposes. The presence of congestion in the network must be inferred by the end systems based only on observed network behavior. TCP must take this approach since the IP layer provides no feedback to the end systems regarding congestion. TCP segment loss is taken as an indication of network congestion and decreases its window size accordingly. 
+
+- **Network-assisted congestion control**. Network-layer components(routers) provide explicit feedback to the sender regarding the congestion state in the network. Simple feedback like a single bit indicating congestion at a link.
+
+For network-assisted congestion control, congestion information is fed back from the network to the sender in two ways. First is that direct feedback may be sent from a network router to the sender, in a form of **choke packet**. The second form occurs when a router marks a field in a packet flowing from sender to receiver to indicate congestion. Upon receipt of a marked packet, the receiver then notifies the sender of the congestion indication.
 
 
 ## 3.7 TCP Congestion Control
