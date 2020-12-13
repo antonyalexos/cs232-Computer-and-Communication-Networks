@@ -765,8 +765,10 @@ When should this linear increase stop?
 
 #### 3 - Fast Recovery
 `cwnd` is increased by 1 MSS for every duplicate ACK received for the missing state that caused TCP to enter this state. When the ACK arrives for the missing segment, TCP goes into Congestion Avoidance after reducing `cwnd`.
-If a timeout occurs `cwnd` is set to 1 MSS and `ssthresh` is set to half the value of `cwnd` when the loss event occurred.
-Fast recovery is recommended but not required in TCP, in fact only the newer version of TCP, **TCP Reno** incorporated fast recovery.
+If a timeout occurs `cwnd` is set to 1 MSS and `ssthresh` is set to half the value of `cwnd` when the loss event occurred. An early version of TCP, the **TCP Tahoe**, unconditionally cut its congestion window to 1 MSS and entered the slow-start phase after either a timeout-indicated triple-duplicate-ACK-indicated loss event. Fast recovery is recommended but not required in TCP, in fact only the newer version of TCP, **TCP Reno** incorporated fast recovery.
+
+#### TCP Congestion Control: Retrospective
+Ignoring the initial slow-start period when a connection begins and assuming that losses are indicated by triple duplicate ACKs rather than timeouts, TCP's congestion control consists of linear increase in cwnd of 1 MSS per RTT and then a halving of cwnd on a triple duplicate ACK-event. Therefore TCP Congestion Control is also referred to as an **additive-increase, multiplicative-decrease(AIMD)** form of congestion control. It linearly increases its congestion window size until a triple duplicate-ACK event occurs. It then decreses its congestion window by a factor of two but begins to increase it linearly again.
 
 #### Macroscopic Description of TCP Throughput
 What is the average throughput (average rate) of a long-lived TCP connection?
