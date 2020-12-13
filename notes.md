@@ -1132,7 +1132,28 @@ BGP also includes attributes allowing routers to assign preferences metrics to t
 When a router receives a route advertisement, it uses its **import policy** to decide whether to accept or filter the route and whether to set certain attributes such as the router preference metrics.
 
 #### BGP Route Selection
-The input of the selection is the set of all routes that have been learned and accepted by the router. If two or more routes exist for the same prefix, elimination rules are applied until only one remains.
+The input of the selection is the set of all routes that have been learned and accepted by the router. If two or more routes exist for the same prefix, elimination rules are applied until only one remains:
+
+- Routes are assigned a local preference value as one of their attributes. The routes with the highest local preference values are selected.
+
+- From the remaining routes the route with the shortest AS-PATH is selected.
+
+- From the remaining routes the route with the closests NEXT-HOP router is selected. Closest means the router for which the cost of teh least-cost path is the smallest.
+
+- If more than one route still remains, the router uses BGP identifiers to select the route.
+
+#### Routing Policy
+All traffic entering a stub network must be destined for that network and all the traffic leaving a stub network must have originated in that network.
+**Why are different inter-AS and intra-AS routing protocols used.** To answer this let's check the differences between the goals of routing within an AS and among ASs:
+
+- **Policy**. Among ASs policy issues dominate. Traffic originating in a specific AS may not be able to pass through another specific AS. Similarly a given AS may want to control what transit trafic it carries between other ASs. Within an AS everything is under the same administrative control and thus policy issues play a much less important role in choosing routes within the AS.
+
+- **Scale**. Within an AS scalability is less of a concern. If a single administrative domain becomes too large, it is always possible to divide it into two Ass and perform inter-AS routing between the two new ASs.
+
+- **Performance**. Because inter-AS routing is so policy oriented, the quality of the routes used is often of secondary concern. Among ASs there is not even the notion of cost. 
+
+## 4.7 Broadcast and Multicast Routing
+
 
 # Chapter 8: Security in Computer Networks
 
