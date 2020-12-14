@@ -1320,6 +1320,37 @@ Error Concealment schemes attempt to produce a replacement for a lost packet tha
 ## 7.4 Protocols for Real-Time Conversational Applications
 
 ### 7.4.1 RTP
+The sender side of a VoIP appliation appends header fields to the audio chunks before passing them to the transport layer. These header fields include sequence numbers and timestamps. Since most multimedia networking applications can make use of sequece numbers and timestamps, iti is convenient to have a standarized packet structure that includes fields for audio/video data, sequence number etc. RTP is such a standard. 
+
+#### RTP Basics
+RTP typically runs on top of UDP. The sending side encapsulates a media chunk within an RTP packet, then encapsulates the packet in a UDP segment and then hands the segment to IP. The receiving side extracts the RTP packet from the UDP segment, then extracts the media chunk from RTP packet and then passes the chunk to the media palyer for decoding and rendering.
+
+**How RTP works**
+The sending side processes each chunk of the audio data with an RTP header that inculdes the type of audio encoding, a sequence number and a timestamp. The RTP header is normally 12 bytes. The audio chunk along with the RTP header form the RTP packet. The RTP packet is sent inot the UDP socket interface. At the receiving side the application receives the RTP packet from its socket interface The application extracts the audio chunk from the RTP packet and usesthe header fields of the RTP packet to properly decode and play back the audio chunk.
+
+RTP does not provide any mechanism to ensure timely delivery of data or provide other quality-of-service(QoS) guarantees; it does not even guarantee delivery of packets or prevent out-of-order delivery of packets. RTP encapuslation is seen only at the end systems. Routers do not distinguish between IP datagrams that carry RTP packets and IP datagrams that don't.
+
+#### RTP Packet Header Fields
+The four main RTP packet header fields are the payload type, sequence number, timestamp and source identifier fields. 
+
+- The **payload type field** is 7 bits long. For an audio stream, the payload type field is used to indicate the type of audio encoding that is being used. If the sender decides to change the encoding in the middle of a session the sender can inform the receiver of the change throufh this payload type field. The sender may want to change the encoding in order to increase the audio quality or to decrease the RTP stream bit rate.
+
+- The **sequence number field** is 16 bits long. The sequence number increments by one for each RTP packet sent and may ne used by the receiver to detect packet loss and to restore packet sequence.
+
+- The **timestamp field** is 32 bits long. It reflects the sampling instant of the first byte in the RTP data packet. The receiver can use timestamps to remove packet jitter introduced in the network and to provide synchronous playout at the receiver. The time-stamp is derived from a sampling clock at the sender. 
+
+The **synchronization source identifier(SSRC) field** is 32 bits long. It identifies the source of the RTP stream. Each stream in an RTP session has a distinct SSRC, which is not the IP address of the sender but instead is a number that the souce assigns randomly when the new stream is started.
+
+## 7.5 Network Support for Multimedia
+There are three broad approaches towards providing network-level support for multimedia applications:
+
+1. **Making the best of best-effort service**. Packet loss and excessive end-to-end delay rarely occur. When demand increases are forecasted the ISPs deploy additional bandwidth and switching capacity to continue to ensure satisfactory delay and packet-loss performance. 
+
+2. **Differentiated service**. Different types of traffic could be provided with different classes of service. With differentiatied service one type of traffic might be given strict priority over another class of traffic when are queued at the same router. 
+
+3. **Pre-connection Quality-of-Service(QoS) Guarantees**. With per-connnection QoS guarantees each instance of an application reserves end-to-end bandwidth and thus has a guaranteed performance. A hard guarantee means the application will receive its requested quality of service with certainty. A soft guarantee means that the application will receive its requested quality of service with high probability. 
+
+### 7.5.1 Dimensioning Best-Effor Networks
 
 
 
