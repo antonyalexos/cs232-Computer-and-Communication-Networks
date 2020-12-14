@@ -1350,7 +1350,69 @@ There are three broad approaches towards providing network-level support for mul
 
 3. **Pre-connection Quality-of-Service(QoS) Guarantees**. With per-connnection QoS guarantees each instance of an application reserves end-to-end bandwidth and thus has a guaranteed performance. A hard guarantee means the application will receive its requested quality of service with certainty. A soft guarantee means that the application will receive its requested quality of service with high probability. 
 
-### 7.5.1 Dimensioning Best-Effor Networks
+### 7.5.1 Dimensioning Best-Effort Networks
+Supporting multimedia applications has a lot of performance requirements like low end-to-end delay, delay jitter and loss and these occur when the network becomes congested. An approach to improving the quality of multimedia applications is the "throw money at the problem" approach, which means to provide enough link capacity throughout the network so that it won't get congested. The question of how much capacity to provide at network links in a given topology to acheive a given level of performance is often known as **bandwidth provisioning**. The even more complicated problem of how to design a network topology to achieve a given level of end-to-end performance is a network design problem often referred to as **network dimensioning**. We need to address the following issues in order to predict application-level performance between two network end points and thus provision enough capacity to meet an application's performance requirements.
+
+1. **Models of traffic demand between network end points**. Models may need to be specified at both the call level and at the packet level.
+
+
+2. **Well defined performance requirements**. For example a performance requirement for supporting delay-sensitive tarffic, such as conversational multimedia application, might be the probability that the end-to-end delay of the packet is greater than a maximum tolerable delay be less than some small value. 
+
+3. **Models to predict end-to-end performance for a given workload model, and techniques to find a minimal cost bandwidth allocation that will result in all user requirements being met**. We need to develop models that can quantify performance for a given workload and optimization techniques to find minimal-cost bandwidth allocations meeting perfomance requirements. The best-effort Internet of today cannot achieve this because of organizational and economic reasons. 
+
+### 7.5.2 Providing Multiple Classes of Service
+The simplest enhancement to the one-size-fits-all best-effort service is to divide traffic into classes and provide different levels of services to these classes. For example an ISP may provide higher quality of service to customers willing to pay more for this service. 
+
+#### Motivating Scenarios
+In the best-effort Internet the audio and the HTTP packets are mixed in the output queue and transmitted in a first-in-first-out(FIFO) order. In this scenario a burst of packets from the Web server could potentially fill up the queue causing audio packets to be delayed or lost. So in order to provide mutiple classes of traffic we could do **packet marking**, which allows a router to distinguish among packets belonging to different classes of traffic. 
+
+Suppose that the router is configured to give priority to packets belonging to the 1 Mbps audio application. Since the outgoing link speed is 1.5 Mbps the HTTP packets can still receive 0.5 Mbps of transmission service. So if the audio application starts transmitting at 1.5 Mbps or higher the HTTP packets will starve and will not receive any service on the link. This could happen to multiple applications sharing the link's bandwidth, so ideally we want a degree of isolation among classes of traffic so that one class of traffic can be protected from the other. So we need to provide a degree of **traffic isolation** among classes so that one class is not adversely affected by another class of traffic that misbehaves. 
+
+If a traffic class or flow must meet certain criteria then a policing mechanism can be put into place to ensure that these criteria are observed. If the policed application misbehaves, the policing mechanism will take some action so that the traffic entering the network confronts to the criteria. While providing isolation among classes or flows it is desirable to use resources as efficiently as possible through **traffic policing**.
+
+#### Scheduling Mechanisms
+
+##### First-In-First-Out(FIFO)
+Packets arriving at the link output queue wait for transmission if the link is currently busy transmitting another packet. If there is not suffecient buffering space to hold the arriving packet the queue's **packet-discarding-policy** determines if the packet will be dropped or other packets will be removed in order to make space. When a packet is transmitted it is removed from the queue. The FIFO scheduliing discipline selected packets for transmission in the same order in which they arrived at the output link queue.
+
+##### Priority Queuing
+Under Priority Queuing packets arriving at the output link are classified into priority classes at the output queue. A packet's priority class may depend on an explicit marking that it carries in its packet header fields. Its priority class typically has its own queue and the the priority queuing discipline will choose a packet from the highest priority class in a FIFO manner inside the class.
+
+##### Round Robin and Weighted Fair Queuing(WFQ)
+Packets are sorted into classes as with priority queuing but rather than there being a strict priority of service among classes a round robin scheduler alternates service among the classes. For example a packet from class 1 is submitted, then a packet from class 2, then a packet from class 1 and then again from class 2. A **work-conserving round robin discipline** will move to the next class if there are no packets in the current class.
+
+**Weighted Fair Queuing** discipline works in the same way as the Round Robin Scheduler but differs on the fact that each class may receive a differential amount of service in any interval of time. So in that way class i will be guaranteed to receive a fraction of service, so each class has a different weight.
+
+#### Policing: The Leaky Bucket
+Plicing is the regulation of rate at which a class or flow is allowed to inject packets into the network and it is an important QoS mechanism. We can identify three important policing criteria:
+
+1. **Average rate**. The network may wish to limit the long-average rate at which a flow's packets can be sent into the network. A crucial issue here is the interval of time over which the average rate will be policed. 
+
+2. **Peak Rate**. It limits the maximum number of packets that can be sent over a shorter period of time. 
+
+3. **Burst Size**. It limits the maximum number of packets that can be sent into the network over an exremely short interval of time. In the limit as the interval length approaches zero the burst size limits the number of packets that can be instantaneously sent into the network. 
+
+The **leaky bucket mechanism** is an abstraction thath can be used to characterize these policing limits. A leaky bucket consists of a bucket that can hold up to b tokens. If the bucket is filled with less than b tokens when a token is generated it will enter the bucket otherwise it will be ignored and the bucket remains full with b tokens. Before a packet is transmitted into the network it must first remove a token from the bucket. If the bucket is empty the packet must wait for a token. Because there can be at most b tokens in the bucket the maximum burst size for a leaky-bucket-policed flow is b packets; and because the token generation rate is r the maximum number of packets that can enter the netowkr at any inteval of time t is rt+b. Thus the token-generation rate r serves to limit the long-term average rate at which packets can enter the network. 
+
+##### Leaky Bucket + Weighted Fair Queuing = Provable maximum Delay in a Queue
+We consider a router's link that multiplexes n flows each policed by a leaky bucket with parameters bi and ri using WFQ scheduling. We use the term flow here loosely to refer to the set of packets that are not distinguished from each other by the scheduler. Each flow i is guaranteed to receive a share of the link bandwidth equal to R*wi/Swi.
+
+### 7.5.3 Diffserv
+It provides service differentiation which is the ability to handle different classes of traffic in different ways within the Internet in a scalable manner. The diffserv architecture consists of two sets of functional elements:
+
+1. **Edge functions: packet classification and traffic conditioning**. At the incompeting edge of the network arriving packets are marked. The differentiated service(DS) field in the IPv4 or IPv6 packet header is set to some value. Different classes of traffic with then receive different service within the core network.
+
+2. **Core function: forwarding**. When a DS-marked packet arrives at a Diffserv-capable router the packet is forwarded onto its next hop according to the so-called per-hop behabior(PHB) associated with that packet's class. The per-hop behavior ifluences how a router's buffers and link bandwidth are shared among the competing classes of traffic. 
+
+### 7.5.4 Per-Connection Quality-of-Service(QoS) Guarantees: Resource Reservation and Call Admission
+Given that two applications cannot bth be satisfied simultaneously the network should block one of the application flows while the other should be allowed to proceed on. In this way the network can guarantee that admitted flows will be able to receive their requested QoS. This process of having a flow declare its QoS requirement and then having the network either accept the flow or block the flow is referred to as the call admission process. There are some mechanisms and protocols if a call is to be guaranteed a given quality of service once it begins:
+
+- **Resource reservation**. The only way to guarantee that a call will have the resources needed to meet its desired is to allocate these resources to the call a process known as resource reservation. Once the resources are reserved the call has on-demand access to these resources throughout its duration, regardless of all other calls. 
+
+- **Call admission**. Such a mechanism is used in order to either accept or deny a call based on the resources that are available. 
+
+- **Call setup signaling**. It coordinates the per-hop allocation of local resources and the overall end-to-end decision of whether or not the call has been able to reserve sufficient resources at each and every router on the end-to-end path. 
+
 
 
 
