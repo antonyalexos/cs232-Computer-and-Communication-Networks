@@ -1210,6 +1210,125 @@ The sender creates a special packet, an **ARP packet**, containing the sending a
 ARP is plug and play: the table gets build automatically.
 ARP stands in the boundary between the link and network layers.
 
-### Sending a Datagram off the Subnet
+#### Sending a Datagram off the Subnet
 A datagram that has to be sent out of the subnet is first sent to the first-hop router on the path to the final destination (which is outside the subnet). How is its MAC acquired? Using ARP.
 When the frame reaches the next-hop router of the destination subnet, it has to be moved inside, the router having to decide what interface to use. This is done using the forwarding table: the router extracts the datagram and checks the destination IP. The datagram is encapsulated again and sent into the subnet, this time the MAC address of the frame is indeed the destination MAC address of the ultimate destination, which the router acquire via ARP.
+
+# Chapter 7: Multimedia Networking
+
+## 7.1 Multimedia Networking applications
+
+### 7.1.1 Properties of Video
+The most salient characteristic of video is its high bit rate. Another important characteristic is that video can be compressed, thereby trading off video quality with bit rate. There are two types of redundancy in a video, both of which can be exploited by video compression. Spatial Redundancy is the redundancy within a given image. Temporal redundancy reflects repetition from image to subsequent image. We can also use compression to create multiuple versions of the same video at a different quality level. 
+
+### 7.1.2 Properties of Audio
+Digital audio has significantly lower bandwidth requirements than video. Let's consider how analog audio is converted to digital signal:
+
+1. The analog audio is sampled at some fixed rate, and the value of each sample is an arbitrary real number.
+
+2. Each of the samples is then rounded to one of a finite number of values, a technique called quantization and such finite values are called quantization values.
+
+3. Each of the quantization values is represented by a fixed number of bits. The bit representations of all the samples are then concatenated together to form the digital representation of the signal. 
+
+### 7.1.3 Types of Multimedia Network Applications
+
+#### Streaming Stored Audio and Video
+We have three distinguishing features here:
+
+1. **Streaming**. The client will be playing out from one location in the video while at the same time receiving later parts of the video from the server. Therefore we avoid a having to download the whole video before playout begins. 
+
+2. **Interactivity**. Because the media is prerecorded, the user may pause, forward, backward, etc. 
+
+3. **Continuous Playout**. The video proceeds according to the original timing of the recording, hence data must be received from the server in time for its playout at the client.
+
+#### Conversational Voice and Video-Over-IP
+Real-time conversational voice over the Internet is often referred to as Internet telephony or Voice-over-IP(VoIP). Timing considerations and tolerance of data loss are particularly important for conversational voice and video applications. The former is very important cause these applications are highly delay-sensitive. Conversational video applications are loss-tolerant. 
+
+#### Streaming Live Audio and Video
+These applications often have many users who receive the same audio/video program at the same time, and they allow them to do it in real time. The network must provide each flow with an average throughput that is larger than the video consumption rate. 
+
+## 7.2 Streaming Stored Video
+Steaming video systems can be classified into three categories: UDP Streaming, HTTP Streaming and Adaptive HTTP Streaming. A common characteristic that they have is the extensive use of client-side application buffering to mitigate the effects of varying end-to-end delays and varying amounts of available bandwidth between server and client. When the video starts it does not start immediately but a reserve is built up instead, which is called client buffering. It has 2 advantages, the first one that it can absorve variations in server-to-client delay, and the second one is that if the bandwidth drops below the video conspumption rate, the use can continue to enjoy the playback.
+
+### 7.2.1 UDP Streaming
+The server transmits a video at a rate that matches the client's video consumption rate while using UDP and it uses a small client-side buffer. Before passing the video chunks to UDP, the server will encapsulate the video chunks within transport packets specially designed for transporting audio and video using the Real-Time Transport Protocol. In addition to the server-to-client video stream, the client sends commands like pause, play, skip forward, etc. It has three drawbacks:
+
+1. Due to the unpredictable and varying amount of available bandwidth between server and client constant-rate UDP streaming can fail to provide continuous playout. 
+
+2. It requires a media control server such as an RTSP server to process client-to-server interactivity requests and to track client state in each session, which increases the cost and the complexity. 
+
+3. Many firewalls are configured to block UDP traffic, preventing the users behind these firewalls from receiving UDP video. 
+
+### 7.2.2 HTTP Streaming
+**How it works**
+In HTTP Streaming the video is stored in an HTTP server as an ordinary file with a specific URL. When the user wants to see the video the client establishes a TCP connection with the server and issues an HTTP GET request for that URL. The server then sends the video file within an HTTP response message. On the client side the bytes are collected in a client application buffer. Once the number of bytes in this buffer exceeds a predetermined threshold the client application begins playback. 
+
+The use of HTTP over TCP also allows the video to traverse firewalls and NATs more easily. Streaming over HTTP also obviates the need for a media control server, such as an RTSP server, reducing the cost of a large-scale deployment over the Internet. 
+
+#### Prefetching Video
+For streaming stored video the client can attempt to download the video at a rate higher than the consumption rate, thereby prefetching video frames that are to be consumed in the future. This prefetched video is stored in the client application buffer and this occurs naturally with TCP streaming, since TCP's congestion avoidance mechanism will attempt to use all of the available bandwidth between client and server. 
+
+#### Client Appplication Buffer and TCP Buffers
+**How the buffer TCP process works**
+When the TCP send buffer is full the server is momentarily prevented from sending more bytes from the video file into the socket. The client application reads bytes from the TCP receive buffer and places the butes into the client application buffer. At the same time the client application grabs video frames from the client application buffer, decompresses the frames and shows them on the user's screen. 
+
+**What happens to the buffer when we pause the video while streaming**
+During the pause period bits are not removed from the client application buffer, even though bits continue to enter the buffer from the server. If the client application buffer is finite it may become full which will cause "back pressure" all the way back to the server. Once the client application buffer becomes full bytes can no longer be removed from the client TCP receive buffer, so it too becomes full. Once the TCP send buffer becomes full, the server cannot send any more bytes into the socket; thus if you pause the video the server may stop transmitting and it will be blocked until the client resumes the video. 
+
+**Early Termination and Repositioning the Video**
+HTTP streaming systems often make use of the HTTP byte-range header in the HTTP GET request message which specifies the specific range of bytes the client currently wants to retrieve from the desired video. This is useful when we want to start the video in a future point in time. When the user repositions to a new position the client sends a new HTTP request and when the server receives it it can forget about any earlier request. Sometimes this will cause a wast of bandwidth because some bytes are unused/unseen.
+
+## Voice-over-IP
+Real-time conversation voice over the internet is often referred to as Internet Telephony of Voice-over-IP(VoIP).
+
+### 7.3.1 Limitations of the Best-Effort IP Service
+Best-Effort IP Service makes its best effort to move each datagram from source to destination as quickly as possible but makes no promises whatsoever about getting the packet to the destination within some delay bound or about a limit on the percentage of packets lost. 
+
+#### Packet Loss
+Loss could be eliminated by sending packets over TCP rather than over UDP. However it is difficult to use retransmission mechanisms in real-time applications because they increase end-to-end delay. Due to TCP congestion control packet loss may result in a reduction of the TCP sender's transmission rate to a rate that is lower than the receiver's drain rate, something that can cause buffer starvation. That's why VoIP applications run over UDP by default.
+
+#### End-to-End Delay
+It is the accumulation of transmission, processing and queuing delays in routers, propagation delays in links and end-system processing delays. The receiving side of a VoIP applicaiton will typically disregard any packets that are delays more than a certain threshold, and these delayed packets will be lost. 
+
+#### Packet Jitter
+A component of end-to-end delays is the varying queuing delays that a packet experiences in the network's routers. Because of the these varying delays the time from when a packet is generated at the source unitl it is received at the receiver can fluctuate from packet to packet. This phenomenon is called jitter. If the receiver ignores the presence of jitter and plays out chunks as soon as they arrive, then the resulting audio quality can become unintelligible at the receiver. 
+
+### 7.3.2 Removing Jitter at the Receiver for Audio
+The receiver should attempt to provide periodic playout of voice chunks in the presence of random network jitter. This is done by combining the two following mechanisms:
+
+1. Prepending each chunk with a timestamp. The sender stamps each chunk with the time at which the chunk was generated. 
+
+2. Delaying playout of chunks at the receiver. The playout delay must be long enough so that we have received most of the packets before the scheduled playout. This playout delay can be either fixed or vary adaptively during the audio session lifetime.
+
+### 7.3.3 Recovering from Packet Loss
+Schemes that attempt to preserve acceptable audio quality in the presence of packet loss are called loss recovery schemes. In a broad sense, packet loss means that a packet is lost either if it never arrives at the receiver or if it arrives after its scheduled playout time. Retransmitting lost packets may not be feasible in a VoIP, so VoIP applications often use some type of loss anticipation scheme.
+
+#### Forward Error Correction(FEC)
+The basic idea of FEC is to add redundant information on the original packet stream. For the cost of marginally increasing the transmission rate, the redundant information can be used to reconstruct approximations of exact versions of some of the lost packets. 
+
+The first FEC mechanism sends a redundant encoded chunk after every n chunks. The redundant chunk is obtained by exclusive OR-ing the n original chunks. So if one packet is lost the receiver can fully reconstruct the lost packet, but if 2 or more packets are lost the receiver cannot reconstruct them. If we keep the group size small a large fraction of the lost data can be recovered when loss is not excessive; but the smaller the group size the greater the relative increase of the transmission rate. This scheme increases the playout delay cause the receiver must wait to receive the entire group of packets before it can begin playout. 
+
+The second FEC mechanism is to senda lower-resolution audio stream as the redundant information. The sender constructs the nth packet by taking the nth chunk from the nominal stream and appending to it the (n-1)st chunk from the redundant stream. This may be a lower quality packet but in overal, a stream of high quality chunks with a few low quality chunks gives a good overall audio.
+
+#### Interleaving
+Instead of redundant transmission, a VoIP application can send interleaved audio. The sender resequences units of audio data before transmission so that origininally adjacent units are separated by a certain distance in the transmitted stream. Interleaving can mitigate the effect of packet losses. The loss of a single packet from an interleaved stram results in multiple gaps in the reconstructed stream as opposed to the single large gap that would occur in a noninterleaved steam. Although it could improve significantly the quality of an audio stream, its dissadvantage is that it increases latency, and a major advantage is that it does not increase the bandwidth requirements of a stream. 
+
+#### Error Concealment
+Error Concealment schemes attempt to produce a replacement for a lost packet that is similar to the original, which is possible since audio signals exhibit large amounts of short-term self-similarity. These techniques work for relatively small loss rates and for small packets. The simplest form of receiver-based recovery is packet repetition, which replaces lost packets with copies of the packets that arrived immediately before the loss. It has low computational complexity and performs reasonably well. Another form of receriver-based recovery is interpolation which used audio before and after the loss to interpolate a suitable packet to cover the loss. Interpolation performs somewhat better than packet repetition but is significantly more computationally intensive. 
+
+
+## 7.4 Protocols for Real-Time Conversational Applications
+
+### 7.4.1 RTP
+
+
+
+
+
+
+
+
+
+
+
+
